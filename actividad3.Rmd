@@ -7,13 +7,19 @@ output:
 
 # Librerías y conexiones
 
-1. cargamos las librerías necesarias para leer el archivo excel
+1. Instalamos librerías necesarias
+
 ```{r}
 install.packages("openxlsx")
+```
+
+
+2. cargamos las librerías necesarias para leer el archivo excel
+```{r}
 library(openxlsx)
 library(dplyr)
 ```
-2. cargamos el archivo excel
+3. cargamos el archivo excel
 ```{r}
 datos <- read.xlsx("Datos Actividad 3.xlsx", sheet = "Hidrocarburos")
 datos
@@ -47,7 +53,7 @@ df2
 summary(df2)
 ```
 
-    4.2. Análisis general
+    4.2. Análisis por provincia (Gasolina 95 E5)
 ```{r}
 # Según Precio.gasolina.95.E5
 res_provincia_95E5 <- df2 %>%
@@ -79,6 +85,7 @@ text(x = 1:length(medianas), y = medianas, labels = format(medianas, digits = 4)
 
 ```
 
+    4.4. Análisis por provincia (Gasóleo A)
 ```{r}
 # Según Precio.gasóleo.A
 res_provincia_gasA <- df2 %>%
@@ -94,6 +101,8 @@ res_provincia_gasA <- df2 %>%
 
 print(res_provincia_gasA)
 ```
+
+    4.5. Graficamos los resultados
 ```{r}
 # Según Precio.gasóleo.A creamos un boxplot por provincia con etiquetas
 
