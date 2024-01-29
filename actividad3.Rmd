@@ -1,0 +1,193 @@
+---
+title: "Estadística - Actividad 3"
+output:
+  html_notebook: default
+  word_document: default
+---
+
+# Librerías y conexiones
+
+1. cargamos las librerías necesarias para leer el archivo excel
+```{r}
+install.packages("openxlsx")
+library(openxlsx)
+library(dplyr)
+```
+2. cargamos el archivo excel
+```{r}
+datos <- read.xlsx("Datos Actividad 3.xlsx", sheet = "Hidrocarburos")
+datos
+```
+# Tarea 1
+
+## Parte 1
+
+1. Filtramos el conjunto de datos según provincia
+```{r}
+df2 <- datos |> filter(Provincia %in% c("MADRID", "BARCELONA", "SEVILLA"))
+df2
+```
+2. formateamos los campos de precio
+```{r}
+df2$Precio.gasolina.95.E5 <- gsub(",", ".", df2$Precio.gasolina.95.E5)
+df2$Precio.gasóleo.A <- gsub(",", ".", df2$Precio.gasóleo.A)
+```
+
+3. setamos los campos precio como numéricos
+```{r}
+df2$Precio.gasolina.95.E5 <- as.numeric(df2$Precio.gasolina.95.E5)
+df2$Precio.gasóleo.A <- as.numeric(df2$Precio.gasóleo.A)
+df2
+```
+
+4. Análisis del dataset
+
+    4.1. Análisis general
+```{r}
+summary(df2)
+```
+
+    4.2. Análisis general
+```{r}
+# Según Precio.gasolina.95.E5
+res_provincia_95E5 <- df2 %>%
+  group_by(Provincia) %>%
+  summarise(
+    cantidad = n(),
+    promedio = mean(Precio.gasolina.95.E5, na.rm = TRUE),
+    max = max(Precio.gasolina.95.E5, na.rm = TRUE),
+    min = min(Precio.gasolina.95.E5, na.rm = TRUE),
+    mediana = median(Precio.gasolina.95.E5, na.rm = TRUE),
+    varianza = var(Precio.gasolina.95.E5, na.rm = TRUE)
+  )
+
+print(res_provincia_95E5)
+```
+    
+    4.3. Graficamos los resultados
+```{r}
+# Según Precio.gasolina.95.E5 creamos un boxplot por provincia con etiquetas
+
+boxplot(df2$Precio.gasolina.95.E5 ~ df2$Provincia, main = "Precio gasolina 95 E5 por provincia", xlab = "Provincia", ylab = "Precio gasolina 95 E5")
+
+# Agregamos las etiquetas para mejorar la visibilidad
+# Calcular las medianas para cada provincia
+medianas <- tapply(df2$Precio.gasolina.95.E5, df2$Provincia, median, na.rm = TRUE)
+
+# Agregar etiquetas de texto para las medianas
+text(x = 1:length(medianas), y = medianas, labels = format(medianas, digits = 4), pos = 3, cex = 0.8)
+
+```
+
+```{r}
+# Según Precio.gasóleo.A
+res_provincia_gasA <- df2 %>%
+  group_by(Provincia) %>%
+  summarise(
+    cantidad = n(),
+    promedio = mean(Precio.gasóleo.A, na.rm = TRUE),
+    max = max(Precio.gasóleo.A, na.rm = TRUE),
+    min = min(Precio.gasóleo.A, na.rm = TRUE),
+    mediana = median(Precio.gasóleo.A, na.rm = TRUE),
+    varianza = var(Precio.gasóleo.A, na.rm = TRUE),
+  )
+
+print(res_provincia_gasA)
+```
+```{r}
+# Según Precio.gasóleo.A creamos un boxplot por provincia con etiquetas
+
+boxplot(df2$Precio.gasóleo.A ~ df2$Provincia, main = "Precio gasóleo A por provincia", xlab = "Provincia", ylab = "Precio gasóleo A")
+
+# Agregamos las etiquetas para mejorar la visibilidad
+# Calcular las medianas para cada provincia
+medianas <- tapply(df2$Precio.gasóleo.A, df2$Provincia, median, na.rm = TRUE)
+
+# Agregar etiquetas de texto para las medianas
+text(x = 1:length(medianas), y = medianas, labels = format(medianas, digits = 4), pos = 3, cex = 0.8)
+
+```
+5. Análisis de correlación entre los precios en provincias
+
+    5.1 Precio gasolina 95 E5, podemos concluir del resúmen y el gráfico que el precio medio (mediana) de la gasolina 95 Es es mayor en la provincia de Barcelona y Madrid, seguido de Sevilla. Además Sevilla cuenta con el menor precio de gasolina de 95 y Madrid, con el mayor. La variabilidad de los precios es diferente en cada provincia a pesar que entre Barcelona y Madrid comparten el mismo precio medio (mediana)
+
+    5.2 Precio gasóleo A, podemos concluir del resúmen y el gráfico que el precio medio (mediana) del gasóleo A es mayor en la provincia de Madrid, seguido de Sevilla y Barcelona. Además Sevilla cuenta al mismo tiempo con el menor precio de gasóleo A y también con el mayor.La variabilidad de los precios es en Barcelona y Madrid es muy similar (aproximados) a pesar de tener precios medios (medianas) diferentes.
+
+# Tarea 2
+
+1. Creamos los conjuntos de datos
+
+Madrid - Otros
+```{r}
+madrid_otros <- datos |> filter(Provincia %in% c("MADRID", "SEVILLA", "BARCELONA", "VALENCIA"))
+```
+
+    1.1 Creamos el campo "agrupación", si si la Provincia es diferente de Madrid, se colocará "Otros".
+```{r}
+madrid_otros$provincia_grp <- ifelse(madrid_otros$Provincia == "MADRID", "MADRID", "OTROS")
+madrid_otros
+```
+2. Formateamos los campos de precio
+
+    2.1. Reemplazamos las comas por puntos
+```{r}
+madrid_otros$Precio.gasolina.95.E5 <- gsub(",", ".", df2$Precio.gasolina.95.E5)
+madrid_otros$Precio.gasóleo.A <- gsub(",", ".", df2$Precio.gasóleo.A)
+```
+
+    2.2. setamos los campos precio como numéricos
+```{r}
+madrid_otros$Precio.gasolina.95.E5 <- as.numeric(df2$Precio.gasolina.95.E5)
+madrid_otros$Precio.gasóleo.A <- as.numeric(df2$Precio.gasóleo.A)
+```
+3. Analizamos las varianzas
+```{r}
+# Realizar la prueba F para Madrid y Sevilla
+var.test(Precio.gasolina.95.E5 ~ provincia_grp, data = madrid_otros,
+         conf.level = 0.95, alternative = 'two.sided')
+```
+4. Testeamos la hipótesis ($H_0:μ1-μ2=0$ $H_2:μ1-μ2≠0$)
+
+    4.1. Precio de gasolina 95 E en Madrid vs Otras provincias
+
+$H_0:μ1-μ2=0$
+```{r}
+t.test(madrid_otros$Precio.gasolina.95.E5 ~ madrid_otros$provincia_grp,
+       conf.level = 0.99,
+       mu = 0,
+       alternative = c("two.sided"),
+       var.equal = TRUE)
+```
+$H_2:μ1-μ2≠0$
+```{r}
+t.test(madrid_otros$Precio.gasolina.95.E5 ~ madrid_otros$provincia_grp,
+       conf.level = 0.99,
+       mu = 0,
+       alternative = c("two.sided"),
+       var.equal = FALSE)
+```
+
+    4.2. Precio de gasóleo A en Madrid vs Otras provincias
+
+$H_0:μ1-μ2=0$
+```{r}
+t.test(madrid_otros$Precio.gasóleo.A ~ madrid_otros$provincia_grp,
+       conf.level = 0.99,
+       mu = 0,
+       alternative = c("two.sided"),
+       var.equal = TRUE)
+```
+$H_2:μ1-μ2≠0$
+```{r}
+t.test(madrid_otros$Precio.gasóleo.A ~ madrid_otros$provincia_grp,
+       conf.level = 0.99,
+       mu = 0,
+       alternative = c("two.sided"),
+       var.equal = FALSE)
+```
+# Conclusiones
+
+Respecto a la gasolina 95 E5, podemos concluir con un 99% de confianza que el precio medio de la gasolina 95 E es mayor en Madrid que en otras provincias.
+
+Respecto al gasóleo A, podemos concluir con un 99% de confianza que el precio medio del gasóleo A es mayor en Madrid que en otras provincias.
+
